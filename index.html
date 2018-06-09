@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+    <head>
+        
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge;text/html;charset=UTF-8">
+        <meta name="ROBOTS" content="index, nofollow">
+        
+        
+        <title>Under Cultivation</title> 
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="reset.css">
+        <link rel="stylesheet" href="main.css">
+
+    </head>
+
+    <body>
+
+<div id="fullscreen">
+<canvas id="mainCanvas"></canvas>
+</div>
+
+<div id="caption">
+<h1>Under Cultivation</h1>
+</div>
+
+
+
+    </body>
+
+<script src="jquery.js"></script>
+
+    <script>
+
+
+var canvas;
+var context;
+
+var width;
+var screenMiddleX;
+var height;
+var screenMiddleY;
+var screenBaselineY;
+var root;
+var frame;
+
+var WIDTH_GROWTH = 0.1;
+var HEIGHT_GROWTH_FACTOR = 1;
+var BRANCH_AT_WIDTH = 4;
+var MAX_WIDTH = 16;
+var BRANCHING_RATIO = 0.618;
+var MAJOR_BRANCH_FACTOR = 1.0;
+var BRANCH_ANGLE = 20.0;
+var BRANCH_SAG_FACTOR = 0.01;
+var LEAF_SIZE = 40;
+
+function Branch() {
+
+    this.seed = function(x,y,angle,width,parent,major) {
+        this.ox=x;
+        this.oy=y;
+        this.relative_angle=angle;
+        this.angle = angle;
+        this.child1 = 0;
+        this.child2 = 0;  
+        this.parent = parent;
+        this.width = width;
+        this.height = 1;
+        this.major = major;
+        this.done = false;
+    }
+
+    this.branch = function() {
+
+    }
+
+    this.grow = function(stop) {
+       
+        if(stop === undefined) stop=false;
+        if(this.parent !=0 ) {
+            this.ox = this.parent.x;
+            this.oy = this.parent.y;
+        }
+        
+        this.x = this.ox + this.height * Math.sin(this.angle);
+        this.y = this.oy - this.height * Math.cos(this.angle);
+
+        if(this.major)
+            nutrients = this.width*HEIGHT_GROWTH_FACTOR*MAJOR_BRANCH_FACTOR;
+        else
+            nutrients = this.width*HEIGHT_GROWTH_FACTOR;
+
+        if(stop) nutrients=0;
+        else stop=false;
+
+        if(this.width>MAX_WIDTH) {
+            stop=true;
+            nutrients=0;
+            this.done=true;
+        } else {
+            if( nutrients ) this.width+=WIDTH_GROWTH;
+        }
+
+
+            if( ( this.child1 != 0 ) && ( this.child2 != 0 ) ) {
+                this.child1.grow(stop);
+                this.child2.grow(stop);
+            } else {
+                
+                if(this.width>BRANCH_AT_WIDTH) {
+                    this.child1 = new Branch();
+
+                    if(this.parent) {
+                        if( (this.angle - this.parent.angle) > 0 ) {
+                            angle2 = BRANCH_ANGLE;
+                            angle1 = -BRANCH_ANGLE
+                        } else {
+                            angle2 = -BRANCH_ANGLE;
+                            angle1 = BRANCH_ANGLE
+                        }
+                        if(this.major) { angle1 = 0; }
+
+                    } else {
+                        if(Math.random() < 0.5)  angle2 = BRANCH_ANGLE; 
+                        else  angle2 = -BRANCH_ANGLE;  
+                        angle1 = 0;
+                    }
+
+                        this.child1.seed(this.x,this.y,this.angle+(angle1 * (Math.PI/180)),this.width*(BRANCHING_RATIO),this,this.major);
+
+                        this.child2 = new Branch();
+                        this.child2.seed(this.x,this.y,this.angle+(angle2 * (Math.PI/180)),this.width*(1-BRANCHING_RATIO),this,false);
+
+
+                    iParent = this;
+                    while(iParent) {
+                        branchsag = 0;
+                        if(iParent.child1.angle > 0 ) branchsag+=iParent.child1.width;
+                        else if(iParent.child1.angle < 0 ) branchsag-=iParent.child1.width;
+                        if(iParent.child2.angle > 0 ) branchsag+=iParent.child2.width;
+                        else if(iParent.child2.angle < 0 ) branchsag-=iParent.child2.width;
+                    
+                        iParent.angle+=((branchsag*BRANCH_SAG_FACTOR) * (Math.PI/180));
+                        iParent = iParent.parent;
+                    }
+                } else {
+                     if(nutrients) this.height+=nutrients;
+                }
+            }
+
+        context.strokeStyle = "rgba(0,168,168,1.0)";
+        context.beginPath();
+        context.lineWidth = this.width;
+        context.moveTo(this.ox,this.oy);
+        context.lineTo(this.x,this.y);
+        context.stroke();
+        context.closePath();
+
+        if(this.width<BRANCH_AT_WIDTH+WIDTH_GROWTH) {
+            /*context.beginPath();
+            context.arc(this.x,this.y,16,0,Math.PI*2,true);
+            
+            var g = context.createRadialGradient(this.x,this.y,0,this.x,this.y,16);
+            g.addColorStop(0.0, 'rgba(0,168,168,0.6)' );
+            g.addColorStop(1.0, 'rgba(0,168,168,0.1)' );
+            context.fillStyle = g;
+            context.fill();
+
+            context.closePath();*/
+
+            drawleaf(this.x,this.y,this.angle + Math.PI/6);
+            drawleaf(this.x,this.y,this.angle + Math.PI/3);
+            drawleaf(this.x,this.y,this.angle);
+            drawleaf(this.x,this.y,this.angle - Math.PI/6);
+            drawleaf(this.x,this.y,this.angle - Math.PI/3);
+        }
+
+        
+    }
+
+}
+
+function drawleaf(x, y, angle) {
+    
+ lx = x + LEAF_SIZE * Math.sin(angle);
+ ly = y - LEAF_SIZE * Math.cos(angle);
+
+
+dx = (LEAF_SIZE*0.38) * Math.sin( (Math.PI/2) - angle);
+dy = (LEAF_SIZE*0.38) * Math.cos( (Math.PI/2) - angle);
+
+console.log(lx + " " + ly);
+  context.beginPath();
+  context.lineWidth=1;
+  context.moveTo(x, y);
+  
+  context.bezierCurveTo(
+    x,y, // C1
+    (x+lx)/2 + dx, (y+ly)/2 + dy, // C2
+    lx, ly); // A2
+
+  context.bezierCurveTo(
+    lx,ly, // C3
+     (x+lx)/2 - dx, (y+ly)/2 - dy, // C2
+    x, y); // A1
+
+
+//context.lineTo(lx,ly);
+//context.stroke();
+
+  context.fillStyle = 'rgba(0,198,198,0.8)';
+  context.strokeStyle = 'rgba(0,168,168,0.4)';
+  context.fill();
+  context.stroke();
+  context.closePath();  
+}
+
+function LightenDarkenColor(col,amt) {
+    col = parseInt(col,16);
+    return (((col & 0x0000FF) + amt) | ((((col>> 8) & 0x00FF) + amt) << 8) | (((col >> 16) + amt) << 16)).toString(16);
+}
+
+function Run() {
+    context.clearRect(0,0,canvas.width,canvas.height);
+    root.grow();
+    if(root.done) clearInterval(frame);
+}
+
+function SetupSimulation() {
+    root = new Branch();
+    root.seed(screenMiddleX,screenBaselineY,0,1,0,true);
+}
+
+function ResizeSimulation() {
+    root.ox=screenMiddleX;
+    root.oy=screenBaselineY;
+    root.grow(true);
+}
+
+
+
+function SetupScreen() {
+    width = $(window).width();
+    height = $(window).height();
+
+    $("#mainCanvas").css("width", width + "px");
+    $("#mainCanvas").css("height", height + "px"); 
+
+    canvas.width = width; //document.width is obsolete
+    canvas.height = height; //document.height is obsolete
+
+    screenMiddleX = width / 2;
+    screenMiddleY = height / 2;
+
+    screenBaselineY = height / 1.3;
+    
+    context=canvas.getContext("2d");
+}
+
+$(window).bind("resize", function(){
+    SetupScreen();
+    ResizeSimulation();
+});
+
+$(document).ready(function(){
+  
+    canvas = document.getElementById("mainCanvas");
+
+    if( canvas.getContext )
+    {
+        SetupScreen();
+        SetupSimulation();
+
+        frame = setInterval( Run , 33 );
+    }
+});
+
+
+
+
+
+
+    </script>
+
+</html>
