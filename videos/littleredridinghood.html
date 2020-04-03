@@ -20,28 +20,28 @@
       left:0;
       right:0;
     }
-    video {
+    video, .wrap {
       width:100%;
       height:100%;
     }
-    .wrap {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
-      width:100%;
-      height:100%;
-    }
+  .video-js.vjs-fluid {
+    height:100% !important;
+  }
+  .video-js .vjs-control-bar {
+    position:fixed !important;
+  }
   </style>
 </head>
 <body>
   <div class="wrap">
 <video
     id="my-video"
-    class="video-js vjs-16-9"
+    class="video-js vjs-show-big-play-button-on-pause"
     controls
     preload="auto"
      width="100%"
         height="100%"
+        data-setup='{"aspectRatio":"16:9", "fill": true}'
   >
     <source src="https://jamesmaltby.s3.eu-west-2.amazonaws.com/littleredridinghood.mp4" type="video/mp4" />
     <p class="vjs-no-js">
