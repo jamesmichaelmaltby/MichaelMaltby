@@ -1,1 +1,43 @@
-<html><body><video controls="" autoplay="" src="https://jamesmaltby.s3.eu-west-2.amazonaws.com/littleredridinghood.mp4" type="video/mp4" class="media-document mac video"></video></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Little Red Riding Hood</title>
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link href="https://vjs.zencdn.net/7.7.5/video-js.css" rel="stylesheet" />
+  <style>
+    body {
+      padding:0;
+      margin:0;
+      background:black;
+    }
+    video {
+      width:100%;
+      height:100%;
+    }
+  </style>
+</head>
+<body>
+<video
+    id="my-video"
+    class="video-js"
+    controls
+    preload="auto"
+     width="100%"
+        height="100%"
+        data-setup='{"aspectRatio":"16:9", "fluid": true}'
+  >
+    <source src="https://jamesmaltby.s3.eu-west-2.amazonaws.com/littleredridinghood.mp4" type="video/mp4" />
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a
+      web browser that
+      <a href="https://videojs.com/html5-video-support/" target="_blank"
+        >supports HTML5 video</a
+      >
+    </p>
+  </video>
+  <script src="https://vjs.zencdn.net/7.7.5/video.js"></script>
+</body>
+</html>
